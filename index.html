@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>رادار الشبكة</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #020617; /* slate-950 */
+            color: #f1f5f9; /* slate-100 */
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px 5px rgba(239, 68, 68, 0.4), inset 0 0 10px rgba(239, 68, 68, 0.4); transform: scale(1); }
+            50% { box-shadow: 0 0 40px 15px rgba(239, 68, 68, 0.7), inset 0 0 20px rgba(239, 68, 68, 0.6); transform: scale(1.05); }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        @keyframes fade-in-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slide-in-toast {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .animate-pulse-glow { animation: pulse-glow 2.5s infinite ease-in-out; }
+        .animate-float { animation: float 4s infinite ease-in-out; }
+        .animate-fade-in-up { animation: fade-in-up 0.5s ease-out forwards; }
+        .animate-toast { animation: slide-in-toast 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        /* Hide sections initially */
+        .tab-content { display: none; }
+        .tab-content.active { display: flex; }
+        
+        /* Loading Spinner */
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.1);
+            border-left-color: #ef4444;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="min-h-screen overflow-x-hidden relative flex flex-col selection:bg-red-500/30">
+
+    <!-- Background ambient light -->
+    <div class="fixed top-[-20%] left-[-10%] w-[50vw] h-[50vw] bg-red-600/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
+    <div class="fixed bottom-[-20%] right-[-10%] w-[40vw] h-[40vw] bg-blue-600/10 rounded-full blur-[100px] pointer-events-none z-0"></div>
+
+    <div id="toast-container" class="fixed top-6 left-6 z-50 flex flex-col gap-3"></div>
+
+    <nav class="border-b border-slate-800 bg-slate-950/50 backdrop-blur-md sticky top-0 z-40">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center gap-3 animate-float" style="animation-duration: 6s;">
+                    <div class="p-2 bg-red-500/10 rounded-xl border border-red-500/20 flex items-center justify-center">
+                        <i class="ph-fill ph-wifi-slash text-red-500 text-3xl"></i>
+                    </div>
+                    <h1 class="text-2xl font-black bg-gradient-to-l from-white to-slate-400 bg-clip-text text-transparent">
+                        رادار الشبكة
+                    </h1>
+                    <span class="hidden sm:flex px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] rounded-full items-center gap-1 font-bold">
+                        <div class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></div>
+                        متصل بالخادم
+                    </span>
+                </div>
+                
+                <div class="flex gap-1 sm:gap-2 bg-slate-900 p-1 rounded-full border border-slate-800 overflow-x-auto">
+                    <button onclick="switchTab('report')" id="tab-btn-report" class="tab-btn active bg-slate-800 text-white shadow-lg flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all">
+                        <i class="ph ph-activity text-lg"></i>
+                        <span class="hidden sm:inline">الإبلاغ</span>
+                    </button>
+                    <button onclick="switchTab('admin')" id="tab-btn-admin" class="tab-btn text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all relative">
+                        <i class="ph ph-shield-warning text-lg"></i>
+                        <span class="hidden sm:inline">التحكم</span>
+                        <span id="pending-badge" style="display: none;" class="absolute top-0 right-0 -mt-1 -mr-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">0</span>
+                    </button>
+                    <button onclick="switchTab('history')" id="tab-btn-history" class="tab-btn text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all">
+                        <i class="ph ph-clock-counter-clockwise text-lg"></i>
+                        <span class="hidden sm:inline">السجل</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 py-12 relative z-10 flex flex-col items-center">
+        
+        <div id="report-section" class="tab-content active w-full flex-col items-center justify-center flex-1 animate-fade-in-up">
+            <div class="text-center mb-16 space-y-4">
+                <h2 class="text-4xl md:text-5xl font-black tracking-tight text-white">
+                    هل تواجه مشكلة في <span class="text-red-500">الإنترنت؟</span>
+                </h2>
+                <p class="text-lg text-slate-400 max-w-xl mx-auto font-medium leading-relaxed">
+                    اضغط على الزر أدناه للإبلاغ فوراً عن انقطاع أو ضعف الخدمة. سيتم تسجيل بلاغك ومراجعته فوراً في النظام.
+                </p>
+            </div>
+
+            <div class="relative group perspective-1000">
+                <div class="absolute -inset-4 bg-gradient-to-r from-red-600 to-orange-600 rounded-full blur-xl opacity-20 group-hover:opacity-40 transition duration-500 pointer-events-none"></div>
+                
+                <button id="report-btn" onclick="submitReport()" class="relative z-10 w-64 h-64 md:w-80 md:h-80 bg-gradient-to-br from-slate-900 to-slate-950 border border-red-500/30 rounded-full flex flex-col items-center justify-center gap-4 animate-pulse-glow hover:scale-105 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute inset-0 bg-red-500/5 rounded-full pointer-events-none"></div>
+                    
+                    <div id="report-btn-content" class="flex flex-col items-center">
+                        <i class="ph-fill ph-wifi-slash text-[80px] text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.8)] mb-2"></i>
+                        <span class="text-3xl font-black text-white tracking-wide uppercase drop-shadow-md">أبلغ الآن</span>
+                        <span class="text-sm font-medium text-red-400/80 mt-2">ضغطة واحدة تكفي</span>
+                    </div>
+
+                    <div id="report-btn-loading" class="hidden flex-col items-center gap-4">
+                        <div class="spinner"></div>
+                        <span class="text-red-400 font-bold text-xl">جاري الإرسال...</span>
+                    </div>
+                </button>
+            </div>
+            
+            <div class="mt-16 flex items-center gap-2 text-slate-500 text-sm font-bold">
+                <i class="ph ph-shield-check text-lg"></i>
+                <span>نظام آمن. يتم تسجيل التوقيت التلقائي في قاعدة البيانات.</span>
+            </div>
+        </div>
+
+        <div id="admin-section" class="tab-content w-full flex-col animate-fade-in-up">
+            <div class="mb-8 flex items-center justify-between">
+                <div>
+                    <h2 class="text-3xl font-black text-white mb-2">لوحة التحكم</h2>
+                    <p class="text-slate-400 font-medium">مراجعة البلاغات المعلقة واتخاذ القرار</p>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl flex items-center gap-2 shadow-inner">
+                    <span class="text-slate-400 text-sm font-bold">معلقة:</span>
+                    <span id="admin-pending-count" class="text-xl font-black text-white">0</span>
+                </div>
+            </div>
+
+            <div id="admin-content" class="w-full">
+                <!-- Data will be injected here via JS -->
+            </div>
+        </div>
+
+        <div id="history-section" class="tab-content w-full flex-col animate-fade-in-up">
+            <div class="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+                <div>
+                    <h2 class="text-3xl font-black text-white mb-2">السجل اليومي</h2>
+                    <p class="text-slate-400 font-medium">تصفح البلاغات السابقة حسب التاريخ</p>
+                </div>
+                
+                <div class="flex flex-col gap-2">
+                    <label class="text-sm font-bold text-slate-400">اختر التاريخ:</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <i class="ph ph-calendar-blank text-slate-400 text-lg"></i>
+                        </div>
+                        <input type="date" id="history-date-input" class="bg-slate-900 border border-slate-700 text-white font-bold text-sm rounded-xl focus:ring-red-500 focus:border-red-500 block w-full pl-4 pr-10 py-3 transition-colors outline-none cursor-pointer" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+                <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+                    <h3 class="font-black text-lg text-white">
+                        سجل يوم: <span id="history-display-date" class="text-red-400" dir="ltr"></span>
+                    </h3>
+                    <span id="history-count-badge" class="px-3 py-1 bg-slate-800 rounded-lg text-sm text-slate-300 font-bold">
+                        0 بلاغات
+                    </span>
+                </div>
+                
+                <div id="history-content" class="p-2 sm:p-6 min-h-[300px] flex flex-col gap-3">
+                    <!-- Data will be injected here via JS -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // --- 1. Configurations & State ---
+        const SUPABASE_URL = 'https://xmximpxhuulrvkkbxlup.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_3JGXocjlvSyjJG5G7mB8UQ_7ur-V1g4';
+        
+        let allReports = [];
+        let currentTab = 'report';
+        
+        // Get today's date in YYYY-MM-DD format based on local time
+        const getLocalDateString = (dateObj) => {
+            const year = dateObj.getFullYear();
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+        
+        let selectedDate = getLocalDateString(new Date());
+
+        // Initialize Date Input
+        const dateInput = document.getElementById('history-date-input');
+        dateInput.value = selectedDate;
+        document.getElementById('history-display-date').textContent = selectedDate;
+
+        dateInput.addEventListener('change', (e) => {
+            selectedDate = e.target.value;
+            document.getElementById('history-display-date').textContent = selectedDate;
+            renderHistory();
+        });
+
+        // --- 2. Tab Switching Logic ---
+        function switchTab(tabName) {
+            currentTab = tabName;
+            
+            // Update Buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = 'tab-btn text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all relative';
+            });
+            const activeBtn = document.getElementById(`tab-btn-${tabName}`);
+            activeBtn.className = 'tab-btn active bg-slate-800 text-white shadow-lg flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all relative';
+            
+            // Update Sections
+            document.querySelectorAll('.tab-content').forEach(sec => {
+                sec.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-section`).classList.add('active');
+
+            // Render specific data if needed
+            if (tabName === 'admin') renderAdmin();
+            if (tabName === 'history') renderHistory();
+        }
+
+        // --- 3. Toast Notifications ---
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const isSuccess = type === 'success';
+            const bgColor = isSuccess ? 'bg-slate-900 border-slate-700 text-slate-200' : 'bg-red-950 border-red-800 text-red-200';
+            const icon = isSuccess ? '<i class="ph-fill ph-check-circle text-green-400 text-xl"></i>' : '<i class="ph-fill ph-x-circle text-red-400 text-xl"></i>';
+
+            toast.className = `flex items-center gap-2 px-6 py-4 rounded-xl shadow-2xl animate-toast border ${bgColor}`;
+            toast.innerHTML = `${icon} <span class="font-bold text-sm">${message}</span>`;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                toast.style.transition = 'all 0.4s ease';
+                setTimeout(() => toast.remove(), 400);
+            }, 3500);
+        }
+
+        // --- 4. Fetch Data from Supabase ---
+        async function fetchReports() {
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/internet_reports?select=*&order=timestamp.desc`, {
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Failed to fetch');
+                const data = await response.json();
+                allReports = data || [];
+                
+                updateUI();
+            } catch (error) {
+                console.error("Fetch Error:", error);
+            }
+        }
+
+        // Helper to format time
+        function formatTime(timestamp) {
+            if (!timestamp) return '';
+            return new Date(Number(timestamp)).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // Badge Generator
+        function getStatusBadgeHTML(status) {
+            if (status === 'confirmed') return `<span class="flex items-center gap-1 px-3 py-1 bg-red-500/20 text-red-400 border border-red-500/30 rounded-full text-xs font-bold"><i class="ph-bold ph-wifi-slash"></i> مشكلة مؤكدة</span>`;
+            if (status === 'denied') return `<span class="flex items-center gap-1 px-3 py-1 bg-green-500/20 text-green-400 border border-green-500/30 rounded-full text-xs font-bold"><i class="ph-bold ph-wifi-high"></i> لا توجد مشكلة</span>`;
+            return `<span class="flex items-center gap-1 px-3 py-1 bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded-full text-xs font-bold"><i class="ph-bold ph-clock"></i> قيد المراجعة</span>`;
+        }
+
+        // Update Everything based on data
+        function updateUI() {
+            const pendingReports = allReports.filter(r => r.status === 'pending');
+            
+            // Update Badges
+            const badge = document.getElementById('pending-badge');
+            const countDisplay = document.getElementById('admin-pending-count');
+            
+            if (pendingReports.length > 0) {
+                badge.style.display = 'flex';
+                badge.textContent = pendingReports.length;
+            } else {
+                badge.style.display = 'none';
+            }
+            countDisplay.textContent = pendingReports.length;
+
+            if (currentTab === 'admin') renderAdmin();
+            if (currentTab === 'history') renderHistory();
+        }
+
+        // Render Admin Tab
+        function renderAdmin() {
+            const pendingReports = allReports.filter(r => r.status === 'pending');
+            const container = document.getElementById('admin-content');
+            
+            if (pendingReports.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-slate-900/50 border border-slate-800 rounded-3xl p-12 flex flex-col items-center text-center">
+                        <div class="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mb-6">
+                            <i class="ph-fill ph-check-circle text-5xl text-green-500"></i>
+                        </div>
+                        <h3 class="text-xl font-black text-white mb-2">الوضع مستقر</h3>
+                        <p class="text-slate-400 font-medium">لا توجد بلاغات معلقة في الوقت الحالي.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<div class="grid gap-4 w-full">';
+            pendingReports.forEach((report, i) => {
+                html += `
+                    <div style="animation-delay: ${i * 0.1}s" class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center animate-fade-in-up hover:border-slate-700 transition-colors">
+                        <div class="flex items-center gap-4">
+                            <div class="bg-yellow-500/10 p-3 rounded-full">
+                                <i class="ph-fill ph-warning-circle text-3xl text-yellow-500"></i>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-3 mb-1">
+                                    <h4 class="text-lg font-black text-slate-200">بلاغ انقطاع</h4>
+                                    ${getStatusBadgeHTML(report.status)}
+                                </div>
+                                <div class="flex items-center gap-4 text-sm text-slate-400 font-bold">
+                                    <span class="flex items-center gap-1"><i class="ph-bold ph-calendar-blank"></i> ${report.dateString}</span>
+                                    <span class="flex items-center gap-1"><i class="ph-bold ph-clock"></i> ${formatTime(report.timestamp)}</span>
+                                </div>
+                                <p class="text-xs text-slate-600 mt-2 font-mono font-bold" dir="ltr">ID: #${String(report.id).substring(0, 8)}</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                            <button onclick="updateReportStatus(${report.id}, 'confirmed')" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold transition-colors shadow-lg shadow-red-900/20">
+                                <i class="ph-bold ph-check-circle text-lg"></i> تأكيد
+                            </button>
+                            <button onclick="updateReportStatus(${report.id}, 'denied')" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-colors">
+                                <i class="ph-bold ph-x-circle text-lg"></i> رفض
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // Render History Tab
+        function renderHistory() {
+            const container = document.getElementById('history-content');
+            const historyReports = allReports.filter(r => r.dateString === selectedDate);
+            
+            document.getElementById('history-count-badge').textContent = `${historyReports.length} بلاغات`;
+
+            if (historyReports.length === 0) {
+                container.innerHTML = `
+                    <div class="h-full flex flex-col items-center justify-center text-center py-16">
+                        <i class="ph-duotone ph-clock-counter-clockwise text-6xl text-slate-700 mb-4"></i>
+                        <p class="text-lg font-bold text-slate-400">لا توجد سجلات لهذا اليوم</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            historyReports.forEach((report, i) => {
+                let iconClass = 'bg-yellow-500/20 text-yellow-500';
+                let icon = 'ph-clock';
+                if(report.status === 'confirmed') { iconClass = 'bg-red-500/20 text-red-500'; icon = 'ph-wifi-slash'; }
+                if(report.status === 'denied') { iconClass = 'bg-green-500/20 text-green-500'; icon = 'ph-wifi-high'; }
+
+                html += `
+                    <div style="animation-delay: ${i * 0.05}s" class="flex items-center justify-between p-4 rounded-xl bg-slate-800/50 border border-slate-700/50 hover:bg-slate-800 transition-colors animate-fade-in-up">
+                        <div class="flex items-center gap-4">
+                            <div class="p-2 rounded-lg flex items-center justify-center ${iconClass}">
+                                <i class="ph-fill ${icon} text-2xl"></i>
+                            </div>
+                            <div>
+                                <div class="font-black text-slate-200">رقم البلاغ: <span class="text-slate-400 font-mono text-sm" dir="ltr">#${String(report.id).slice(-6)}</span></div>
+                                <div class="text-sm text-slate-400 flex items-center gap-1 mt-1 font-bold">
+                                    <i class="ph-bold ph-clock"></i> ${formatTime(report.timestamp)}
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            ${getStatusBadgeHTML(report.status)}
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // --- 5. Actions (Submit Report & Update Status) ---
+        async function submitReport() {
+            const btnContent = document.getElementById('report-btn-content');
+            const btnLoading = document.getElementById('report-btn-loading');
+            const btn = document.getElementById('report-btn');
+
+            // UI Loading state
+            btn.disabled = true;
+            btn.classList.remove('animate-pulse-glow', 'hover:scale-105');
+            btn.classList.add('opacity-80');
+            btnContent.classList.add('hidden');
+            btnLoading.classList.remove('hidden');
+            btnLoading.classList.add('flex');
+
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/internet_reports`, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=representation'
+                    },
+                    body: JSON.stringify({
+                        timestamp: Date.now(),
+                        dateString: getLocalDateString(new Date()),
+                        status: 'pending'
+                    })
+                });
+
+                if (!response.ok) throw new Error('Network error');
+                const newData = await response.json();
+                
+                // Add to local state immediately
+                allReports.unshift(newData[0]);
+                updateUI();
+                showToast("تم إرسال البلاغ بنجاح! جاري المراجعة.", "success");
+            } catch (error) {
+                console.error("Report error:", error);
+                showToast("حدث خطأ أثناء إرسال البلاغ", "error");
+            } finally {
+                // Restore UI
+                btn.disabled = false;
+                btn.classList.add('animate-pulse-glow', 'hover:scale-105');
+                btn.classList.remove('opacity-80');
+                btnContent.classList.remove('hidden');
+                btnLoading.classList.add('hidden');
+                btnLoading.classList.remove('flex');
+            }
+        }
+
+        async function updateReportStatus(id, newStatus) {
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/internet_reports?id=eq.${id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=representation'
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                if (!response.ok) throw new Error('Network error');
+                
+                // Update local state
+                allReports = allReports.map(r => r.id === id ? { ...r, status: newStatus } : r);
+                updateUI();
+                
+                showToast(newStatus === 'confirmed' ? "تم تأكيد وجود مشكلة!" : "تم رفض البلاغ.", "success");
+            } catch (error) {
+                console.error("Update error:", error);
+                showToast("حدث خطأ أثناء تحديث الحالة", "error");
+            }
+        }
+
+        // --- 6. Initialization ---
+        // Fetch immediately
+        fetchReports();
+        
+        // Auto refresh every 5 seconds
+        setInterval(fetchReports, 5000);
+
+    </script>
+</body>
+</html>
