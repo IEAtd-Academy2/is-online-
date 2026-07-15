@@ -555,9 +555,9 @@
                 });
 
                 if (!response.ok) {
-                    const errText = await response.text();
-                    console.error("Supabase Security Error:", errText);
-                    throw new Error("تأكد من إغلاق RLS في إعدادات Supabase");
+                    const errObj = await response.json();
+                    console.error("Supabase Error Details:", errObj);
+                    throw new Error("السبب: " + (errObj.message || errObj.details));
                 }
                 
                 const newData = await response.json();
@@ -601,9 +601,9 @@
                 });
 
                 if (!response.ok) {
-                    const errText = await response.text();
-                    console.error("Supabase Column Error:", errText);
-                    throw new Error('تأكد من إضافة عمود resolved_timestamp كما في أوامر SQL');
+                    const errObj = await response.json();
+                    console.error("Supabase Error Details:", errObj);
+                    throw new Error("السبب: " + (errObj.message || errObj.details));
                 }
                 
                 const responseData = await response.json();
