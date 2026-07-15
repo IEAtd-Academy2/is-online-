@@ -347,55 +347,69 @@
 
         function updateLatestStatusBanner() {
             const banner = document.getElementById('latest-status-banner');
-            if (allReports.length === 0) {
-                banner.classList.add('hidden');
-                return;
-            }
-            
-            const latest = allReports[0];
             banner.classList.remove('hidden', 'bg-red-900/20', 'border-red-500/30', 'bg-green-900/20', 'border-green-500/30', 'bg-yellow-900/20', 'border-yellow-500/30');
             
-            if (latest.status === 'confirmed') {
-                banner.classList.add('flex', 'bg-red-900/20', 'border-red-500/30');
-                banner.innerHTML = `
-                    <div class="flex items-center gap-3 text-red-400">
-                        <i class="ph-fill ph-warning-circle text-2xl"></i>
-                        <span class="font-bold text-lg">يوجد انقطاع حالي بالشبكة!</span>
-                    </div>
-                    <p class="text-sm text-slate-300 mt-1">تم تأكيد المشكلة منذ: ${formatTime(latest.timestamp)}. جاري العمل على الحل.</p>
-                `;
-            } else if (latest.status === 'resolved') {
+            // البحث عن أي بلاغ نشط حالياً (مؤكد أو قيد الانتظار)
+            const activeReport = allReports.find(r => r.status === 'confirmed' || r.status === 'pending');
+            
+            if (activeReport) {
+                if (activeReport.status === 'confirmed') {
+                    banner.classList.add('flex', 'bg-red-900/20', 'border-red-500/30');
+                    banner.innerHTML = `
+                        <div class="flex items-center gap-3 text-red-400">
+                            <i class="ph-fill ph-warning-circle text-2xl"></i>
+                            <span class="font-bold text-lg">يوجد انقطاع حالي بالشبكة!</span>
+                        </div>
+                        <p class="text-sm text-slate-300 mt-1">تم تأكيد المشكلة منذ الساعة <span class="font-bold text-white">${formatTime(activeReport.timestamp)}</span>. جاري العمل على الحل.</p>
+                    `;
+                } else if (activeReport.status === 'pending') {
+                    banner.classList.add('flex', 'bg-yellow-900/20', 'border-yellow-500/30');
+                    banner.innerHTML = `
+                        <div class="flex items-center gap-3 text-yellow-400">
+                            <i class="ph-fill ph-clock text-2xl"></i>
+                            <span class="font-bold text-lg">جاري فحص حالة الشبكة...</span>
+                        </div>
+                        <p class="text-sm text-slate-300 mt-1">يوجد بلاغ قيد المراجعة مسجل الساعة <span class="font-bold text-white">${formatTime(activeReport.timestamp)}</span>.</p>
+                    `;
+                }
+            } else {
+                // إذا لم يكن هناك بلاغات نشطة، إذن الإنترنت يعمل بشكل طبيعي
                 banner.classList.add('flex', 'bg-green-900/20', 'border-green-500/30');
                 
-                // حساب المدة
-                const diffMs = latest.resolved_timestamp - latest.timestamp;
-                const totalMins = Math.floor(diffMs / 60000);
-                const hours = Math.floor(totalMins / 60);
-                const mins = totalMins % 60;
+                // البحث عن أحدث بلاغ تم حله لعرض تاريخه ومدته
+                const lastResolved = allReports.find(r => r.status === 'resolved');
                 
-                let durationStr = '';
-                if (hours > 0) durationStr += `${hours} ساعة `;
-                if (mins > 0 || hours === 0) durationStr += `${hours > 0 ? 'و ' : ''}${mins} دقيقة`;
+                let detailsHTML = '<p class="text-sm text-slate-300 mt-1">الشبكة مستقرة حالياً ولا توجد أي مشاكل مسجلة.</p>';
+                
+                if (lastResolved && lastResolved.resolved_timestamp) {
+                    const diffMs = lastResolved.resolved_timestamp - lastResolved.timestamp;
+                    const totalMins = Math.floor(diffMs / 60000);
+                    const hours = Math.floor(totalMins / 60);
+                    const mins = totalMins % 60;
+                    
+                    let durationStr = '';
+                    if (hours > 0) durationStr += `${hours} ساعة `;
+                    if (mins > 0 || hours === 0) durationStr += `${hours > 0 ? 'و ' : ''}${mins} دقيقة`;
+
+                    const startTime = formatTime(lastResolved.timestamp);
+                    const endTime = formatTime(lastResolved.resolved_timestamp);
+
+                    detailsHTML = `
+                        <p class="text-sm text-slate-300 mt-2 leading-relaxed">
+                            آخر انقطاع مسجل كان <span class="font-bold text-white px-1">من الساعة ${startTime} إلى الساعة ${endTime}</span>
+                            <br/>
+                            <span class="text-xs text-slate-400 inline-block mt-1">إجمالي مدة العطل: <span class="text-green-400 font-black bg-green-500/10 px-2 py-0.5 rounded">${durationStr}</span></span>
+                        </p>
+                    `;
+                }
 
                 banner.innerHTML = `
                     <div class="flex items-center gap-3 text-green-400">
                         <i class="ph-fill ph-check-circle text-2xl"></i>
-                        <span class="font-bold text-lg">الشبكة مستقرة الآن</span>
+                        <span class="font-bold text-lg">الإنترنت يعمل بشكل ممتاز الآن</span>
                     </div>
-                    <p class="text-sm text-slate-300 mt-1">آخر انقطاع كان الساعة ${formatTime(latest.timestamp)} وتم حله. استمر العطل لمدة: <span class="font-black text-white px-2 bg-green-500/20 rounded">${durationStr}</span>.</p>
+                    ${detailsHTML}
                 `;
-            } else if (latest.status === 'pending') {
-                banner.classList.add('flex', 'bg-yellow-900/20', 'border-yellow-500/30');
-                banner.innerHTML = `
-                    <div class="flex items-center gap-3 text-yellow-400">
-                        <i class="ph-fill ph-clock text-2xl"></i>
-                        <span class="font-bold text-lg">يوجد بلاغ قيد المراجعة</span>
-                    </div>
-                    <p class="text-sm text-slate-300 mt-1">تم الإبلاغ في: ${formatTime(latest.timestamp)}</p>
-                `;
-            } else {
-                banner.classList.add('hidden');
-                banner.classList.remove('flex');
             }
         }
 
