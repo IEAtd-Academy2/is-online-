@@ -80,16 +80,16 @@
                     </h1>
                     <span class="hidden sm:flex px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] rounded-full items-center gap-1 font-bold">
                         <div class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></div>
-                        متصل بالخادم
+                        مباشر
                     </span>
                 </div>
                 
                 <div class="flex gap-1 sm:gap-2 bg-slate-900 p-1 rounded-full border border-slate-800 overflow-x-auto">
                     <button onclick="switchTab('report')" id="tab-btn-report" class="tab-btn active bg-slate-800 text-white shadow-lg flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all">
                         <i class="ph ph-activity text-lg"></i>
-                        <span class="hidden sm:inline">الإبلاغ</span>
+                        <span class="hidden sm:inline">الرئيسية</span>
                     </button>
-                    <!-- الزر الآن مخفي افتراضياً ولا يظهر إلا بالرقم السري -->
+                    <!-- لوحة التحكم مخفية افتراضياً -->
                     <button onclick="switchTab('admin')" id="tab-btn-admin" class="hidden tab-btn text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all relative">
                         <i class="ph ph-shield-warning text-lg"></i>
                         <span class="hidden sm:inline">التحكم</span>
@@ -104,7 +104,6 @@
         </div>
     </nav>
 
-    <!-- Main Content Area -->
     <main class="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 py-12 relative z-10 flex flex-col items-center">
         
         <div id="report-section" class="tab-content active w-full flex-col items-center justify-center flex-1 animate-fade-in-up">
@@ -113,14 +112,14 @@
                     هل تواجه مشكلة في <span class="text-red-500">الإنترنت؟</span>
                 </h2>
                 <p class="text-lg text-slate-400 max-w-xl mx-auto font-medium leading-relaxed">
-                    اضغط على الزر أدناه للإبلاغ فوراً عن انقطاع أو ضعف الخدمة. سيتم تسجيل بلاغك ومراجعته فوراً في النظام.
+                    اضغط على الزر أدناه للإبلاغ فوراً عن انقطاع أو ضعف الخدمة. سيتم تسجيل بلاغك ومراجعته لحظياً.
                 </p>
             </div>
 
             <div class="relative group perspective-1000">
                 <div class="absolute -inset-4 bg-gradient-to-r from-red-600 to-orange-600 rounded-full blur-xl opacity-20 group-hover:opacity-40 transition duration-500 pointer-events-none"></div>
                 
-                <button id="report-btn" onclick="submitReport()" class="relative z-10 w-64 h-64 md:w-80 md:h-80 bg-gradient-to-br from-slate-900 to-slate-950 border border-red-500/30 rounded-full flex flex-col items-center justify-center gap-4 animate-pulse-glow hover:scale-105 transition-transform duration-300 overflow-hidden">
+                <button id="report-btn" onclick="submitReport()" class="relative z-10 w-64 h-64 md:w-80 md:h-80 bg-gradient-to-br from-slate-900 to-slate-950 border border-red-500/30 rounded-full flex flex-col items-center justify-center gap-4 animate-pulse-glow hover:scale-105 transition-transform duration-300 overflow-hidden cursor-pointer">
                     <div class="absolute inset-0 bg-red-500/5 rounded-full pointer-events-none"></div>
                     
                     <div id="report-btn-content" class="flex flex-col items-center">
@@ -136,13 +135,14 @@
                 </button>
             </div>
             
-            <div class="mt-16 flex items-center gap-2 text-slate-500 text-sm font-bold">
-                <i class="ph ph-shield-check text-lg"></i>
-                <span>نظام آمن. يتم تسجيل التوقيت التلقائي في قاعدة البيانات.</span>
-            </div>
-            
-            <div id="latest-status-banner" class="mt-8 w-full max-w-lg hidden flex-col gap-2 p-4 rounded-2xl border transition-all duration-300">
-                <!-- سيتم حقن حالة الشبكة والمدة هنا تلقائياً -->
+            <div class="mt-16 w-full flex flex-col items-center">
+                <!-- شريط الحالة الحي (الإنترنت شغال ولا فاصل؟) -->
+                <div id="latest-status-banner" class="w-full max-w-lg flex flex-col gap-2 p-5 rounded-2xl border transition-all duration-300 shadow-xl bg-slate-900/50 border-slate-800">
+                    <div class="flex items-center gap-3 text-slate-400 justify-center">
+                        <i class="ph-bold ph-arrows-clockwise text-xl animate-spin"></i>
+                        <span class="font-bold text-lg">جاري فحص حالة الشبكة...</span>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -153,7 +153,7 @@
                     <p class="text-slate-400 font-medium">مراجعة البلاغات المعلقة واتخاذ القرار</p>
                 </div>
                 <div class="bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl flex items-center gap-2 shadow-inner">
-                    <span class="text-slate-400 text-sm font-bold">معلقة:</span>
+                    <span class="text-slate-400 text-sm font-bold">تحتاج لتدخل:</span>
                     <span id="admin-pending-count" class="text-xl font-black text-white">0</span>
                 </div>
             </div>
@@ -199,18 +199,17 @@
 
     </main>
 
-    <!-- هذا هو الزر السري الشفاف في الزاوية السفلية اليمنى -->
-    <button onclick="revealAdmin()" class="fixed bottom-0 right-0 w-12 h-12 opacity-0 hover:opacity-10 bg-white z-50 cursor-default" title="Secret"></button>
+    <!-- الزر السري المخفي في أقصى الزاوية السفلية اليمنى لفتح لوحة التحكم -->
+    <button onclick="revealAdmin()" class="fixed bottom-0 right-0 w-16 h-16 opacity-0 hover:opacity-10 bg-white z-50 cursor-default" title="Secret"></button>
 
     <script>
-        // --- 1. Configurations & State ---
+        // --- 1. مفاتيح السيرفر (Supabase) ---
         const SUPABASE_URL = 'https://xmximpxhuulrvkkbxlup.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_3JGXocjlvSyjJG5G7mB8UQ_7ur-V1g4';
         
         let allReports = [];
         let currentTab = 'report';
         
-        // Get today's date in YYYY-MM-DD format based on local time
         const getLocalDateString = (dateObj) => {
             const year = dateObj.getFullYear();
             const month = String(dateObj.getMonth() + 1).padStart(2, '0');
@@ -220,7 +219,6 @@
         
         let selectedDate = getLocalDateString(new Date());
 
-        // Initialize Date Input
         const dateInput = document.getElementById('history-date-input');
         dateInput.value = selectedDate;
         document.getElementById('history-display-date').textContent = selectedDate;
@@ -231,30 +229,25 @@
             renderHistory();
         });
 
-        // --- 2. Tab Switching Logic ---
         function switchTab(tabName) {
             currentTab = tabName;
             
-            // Update Buttons
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.className = 'tab-btn text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all relative';
             });
             const activeBtn = document.getElementById(`tab-btn-${tabName}`);
-            activeBtn.className = 'tab-btn active bg-slate-800 text-white shadow-lg flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all relative';
+            if(activeBtn) {
+                activeBtn.className = 'tab-btn active bg-slate-800 text-white shadow-lg flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all relative';
+            }
             
-            // Update Sections
-            document.querySelectorAll('.tab-content').forEach(sec => {
-                sec.classList.remove('active');
-            });
+            document.querySelectorAll('.tab-content').forEach(sec => sec.classList.remove('active'));
             document.getElementById(`${tabName}-section`).classList.add('active');
 
-            // Render specific data if needed
             if (tabName === 'admin') renderAdmin();
             if (tabName === 'history') renderHistory();
         }
 
-        // --- 3. Toast Notifications ---
-        function showToast(message, type = 'success') {
+        function showToast(message, type = 'success', duration = 4000) {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             
@@ -262,8 +255,8 @@
             const bgColor = isSuccess ? 'bg-slate-900 border-slate-700 text-slate-200' : 'bg-red-950 border-red-800 text-red-200';
             const icon = isSuccess ? '<i class="ph-fill ph-check-circle text-green-400 text-xl"></i>' : '<i class="ph-fill ph-warning-circle text-red-400 text-xl"></i>';
 
-            toast.className = `flex items-center gap-2 px-6 py-4 rounded-xl shadow-2xl animate-toast border ${bgColor}`;
-            toast.innerHTML = `${icon} <span class="font-bold text-sm">${message}</span>`;
+            toast.className = `flex flex-col px-6 py-4 rounded-xl shadow-2xl animate-toast border ${bgColor}`;
+            toast.innerHTML = `<div class="flex items-center gap-3">${icon} <span class="font-bold text-sm leading-relaxed">${message}</span></div>`;
             
             container.appendChild(toast);
             
@@ -272,23 +265,22 @@
                 toast.style.transform = 'translateX(100%)';
                 toast.style.transition = 'all 0.4s ease';
                 setTimeout(() => toast.remove(), 400);
-            }, 3500);
+            }, duration);
         }
 
         function revealAdmin() {
-            const password = prompt("يرجى إدخال رمز المرور السري:");
-            if (password === "admin") { // كلمة المرور هي admin
+            const password = prompt("يرجى إدخال رمز المرور السري (المدير):");
+            if (password === "admin") { 
                 const adminBtn = document.getElementById('tab-btn-admin');
                 adminBtn.classList.remove('hidden');
                 adminBtn.classList.add('flex');
                 switchTab('admin');
-                showToast("تم فتح لوحة التحكم للمسؤول", "success");
+                showToast("مرحباً بك! تم فتح لوحة التحكم بنجاح.", "success");
             } else if (password) {
-                showToast("رمز المرور الدخول خاطئ", "error");
+                showToast("رمز المرور خاطئ!", "error");
             }
         }
 
-        // --- 4. Fetch Data from Supabase ---
         async function fetchReports() {
             try {
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/internet_reports?select=*&order=timestamp.desc`, {
@@ -300,34 +292,28 @@
                 });
                 
                 if (!response.ok) throw new Error('Failed to fetch');
-                const data = await response.json();
-                allReports = data || [];
-                
+                allReports = await response.json() || [];
                 updateUI();
             } catch (error) {
                 console.error("Fetch Error:", error);
             }
         }
 
-        // Helper to format time
         function formatTime(timestamp) {
             if (!timestamp) return '';
             return new Date(Number(timestamp)).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
         }
 
-        // Badge Generator
         function getStatusBadgeHTML(status) {
             if (status === 'confirmed') return `<span class="flex items-center gap-1 px-3 py-1 bg-red-500/20 text-red-400 border border-red-500/30 rounded-full text-xs font-bold"><i class="ph-bold ph-wifi-slash"></i> مشكلة مؤكدة</span>`;
-            if (status === 'denied') return `<span class="flex items-center gap-1 px-3 py-1 bg-slate-500/20 text-slate-400 border border-slate-500/30 rounded-full text-xs font-bold"><i class="ph-bold ph-x"></i> بلاغ مرفوض</span>`;
-            if (status === 'resolved') return `<span class="flex items-center gap-1 px-3 py-1 bg-green-500/20 text-green-400 border border-green-500/30 rounded-full text-xs font-bold"><i class="ph-bold ph-check-circle"></i> تم الحل</span>`;
+            if (status === 'denied') return `<span class="flex items-center gap-1 px-3 py-1 bg-slate-500/20 text-slate-400 border border-slate-500/30 rounded-full text-xs font-bold"><i class="ph-bold ph-x"></i> بلاغ كاذب/مرفوض</span>`;
+            if (status === 'resolved') return `<span class="flex items-center gap-1 px-3 py-1 bg-green-500/20 text-green-400 border border-green-500/30 rounded-full text-xs font-bold"><i class="ph-bold ph-check-circle"></i> تم حل المشكلة</span>`;
             return `<span class="flex items-center gap-1 px-3 py-1 bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded-full text-xs font-bold"><i class="ph-bold ph-clock"></i> قيد المراجعة</span>`;
         }
 
-        // Update Everything based on data
         function updateUI() {
             const pendingReports = allReports.filter(r => r.status === 'pending');
             
-            // Update Badges
             const badge = document.getElementById('pending-badge');
             const countDisplay = document.getElementById('admin-pending-count');
             
@@ -337,7 +323,7 @@
             } else {
                 badge.style.display = 'none';
             }
-            countDisplay.textContent = pendingReports.length;
+            if(countDisplay) countDisplay.textContent = allReports.filter(r => r.status === 'pending' || r.status === 'confirmed').length;
 
             updateLatestStatusBanner();
 
@@ -347,40 +333,43 @@
 
         function updateLatestStatusBanner() {
             const banner = document.getElementById('latest-status-banner');
-            banner.classList.remove('hidden', 'bg-red-900/20', 'border-red-500/30', 'bg-green-900/20', 'border-green-500/30', 'bg-yellow-900/20', 'border-yellow-500/30');
+            banner.className = 'w-full max-w-lg flex flex-col gap-2 p-5 rounded-2xl border transition-all duration-300 shadow-xl';
             
-            // البحث عن أي بلاغ نشط حالياً (مؤكد أو قيد الانتظار)
+            // تحقق من أي بلاغ نشط (لم يتم حله أو رفضه)
             const activeReport = allReports.find(r => r.status === 'confirmed' || r.status === 'pending');
             
             if (activeReport) {
                 if (activeReport.status === 'confirmed') {
-                    banner.classList.add('flex', 'bg-red-900/20', 'border-red-500/30');
+                    banner.classList.add('bg-red-900/20', 'border-red-500/30');
                     banner.innerHTML = `
-                        <div class="flex items-center gap-3 text-red-400">
-                            <i class="ph-fill ph-warning-circle text-2xl"></i>
-                            <span class="font-bold text-lg">يوجد انقطاع حالي بالشبكة!</span>
+                        <div class="flex items-center gap-3 text-red-500">
+                            <i class="ph-fill ph-warning-circle text-3xl"></i>
+                            <span class="font-black text-xl">يوجد عطل حالي بالإنترنت!</span>
                         </div>
-                        <p class="text-sm text-slate-300 mt-1">تم تأكيد المشكلة منذ الساعة <span class="font-bold text-white">${formatTime(activeReport.timestamp)}</span>. جاري العمل على الحل.</p>
+                        <div class="bg-slate-950/50 p-3 rounded-lg mt-2 border border-slate-800/50">
+                            <p class="text-sm text-slate-300 font-medium">تم تأكيد انقطاع الخدمة منذ الساعة <span class="font-bold text-white bg-slate-800 px-2 py-0.5 rounded mx-1">${formatTime(activeReport.timestamp)}</span>. وجاري العمل على الحل الآن.</p>
+                        </div>
                     `;
                 } else if (activeReport.status === 'pending') {
-                    banner.classList.add('flex', 'bg-yellow-900/20', 'border-yellow-500/30');
+                    banner.classList.add('bg-yellow-900/20', 'border-yellow-500/30');
                     banner.innerHTML = `
-                        <div class="flex items-center gap-3 text-yellow-400">
-                            <i class="ph-fill ph-clock text-2xl"></i>
-                            <span class="font-bold text-lg">جاري فحص حالة الشبكة...</span>
+                        <div class="flex items-center gap-3 text-yellow-500">
+                            <i class="ph-fill ph-clock text-3xl animate-pulse"></i>
+                            <span class="font-black text-xl">جاري مراجعة بلاغ جديد...</span>
                         </div>
-                        <p class="text-sm text-slate-300 mt-1">يوجد بلاغ قيد المراجعة مسجل الساعة <span class="font-bold text-white">${formatTime(activeReport.timestamp)}</span>.</p>
+                        <div class="bg-slate-950/50 p-3 rounded-lg mt-2 border border-slate-800/50">
+                            <p class="text-sm text-slate-300 font-medium">تم استلام بلاغ بوجود عطل الساعة <span class="font-bold text-white bg-slate-800 px-2 py-0.5 rounded mx-1">${formatTime(activeReport.timestamp)}</span>. الإدارة تراجع المشكلة الآن.</p>
+                        </div>
                     `;
                 }
             } else {
-                // إذا لم يكن هناك بلاغات نشطة، إذن الإنترنت يعمل بشكل طبيعي
-                banner.classList.add('flex', 'bg-green-900/20', 'border-green-500/30');
+                // لا يوجد أعطال نشطة! الإنترنت ممتاز.
+                banner.classList.add('bg-green-900/20', 'border-green-500/30');
                 
-                // البحث عن أحدث بلاغ تم حله لعرض تاريخه ومدته
+                // نبحث عن آخر عطل تم حله لعرض تفاصيله (من وإلى)
                 const lastResolved = allReports.find(r => r.status === 'resolved');
                 
-                let detailsHTML = '<p class="text-sm text-slate-300 mt-1">الشبكة مستقرة حالياً ولا توجد أي مشاكل مسجلة.</p>';
-                
+                let historyHTML = '';
                 if (lastResolved && lastResolved.resolved_timestamp) {
                     const diffMs = lastResolved.resolved_timestamp - lastResolved.timestamp;
                     const totalMins = Math.floor(diffMs / 60000);
@@ -394,39 +383,47 @@
                     const startTime = formatTime(lastResolved.timestamp);
                     const endTime = formatTime(lastResolved.resolved_timestamp);
 
-                    detailsHTML = `
-                        <p class="text-sm text-slate-300 mt-2 leading-relaxed">
-                            آخر انقطاع مسجل كان <span class="font-bold text-white px-1">من الساعة ${startTime} إلى الساعة ${endTime}</span>
-                            <br/>
-                            <span class="text-xs text-slate-400 inline-block mt-1">إجمالي مدة العطل: <span class="text-green-400 font-black bg-green-500/10 px-2 py-0.5 rounded">${durationStr}</span></span>
-                        </p>
+                    historyHTML = `
+                        <div class="mt-3 bg-slate-950/50 border border-slate-800/50 rounded-xl p-4 flex flex-col gap-2">
+                            <p class="text-sm text-slate-300 font-medium">آخر انقطاع مسجل كان:</p>
+                            <div class="flex items-center flex-wrap gap-2 text-sm">
+                                <span class="bg-slate-800 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-700">من الساعة <span class="font-bold text-white mx-1">${startTime}</span></span>
+                                <i class="ph-bold ph-arrow-left text-slate-500"></i>
+                                <span class="bg-slate-800 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-700">إلى الساعة <span class="font-bold text-white mx-1">${endTime}</span></span>
+                            </div>
+                            <div class="mt-1 flex items-center gap-2">
+                                <span class="text-xs text-slate-400">إجمالي مدة العطل:</span>
+                                <span class="text-xs font-black bg-green-500/20 text-green-400 px-2 py-0.5 rounded border border-green-500/30">${durationStr}</span>
+                            </div>
+                        </div>
                     `;
+                } else {
+                    historyHTML = `<p class="text-sm text-slate-400 mt-2 font-medium px-2">لم يتم تسجيل أي أعطال سابقة في النظام.</p>`;
                 }
 
                 banner.innerHTML = `
-                    <div class="flex items-center gap-3 text-green-400">
-                        <i class="ph-fill ph-check-circle text-2xl"></i>
-                        <span class="font-bold text-lg">الإنترنت يعمل بشكل ممتاز الآن</span>
+                    <div class="flex items-center gap-3 text-green-500 px-2">
+                        <i class="ph-fill ph-check-circle text-3xl"></i>
+                        <span class="font-black text-xl">الإنترنت يعمل بشكل ممتاز الآن</span>
                     </div>
-                    ${detailsHTML}
+                    ${historyHTML}
                 `;
             }
         }
 
-        // Render Admin Tab
         function renderAdmin() {
-            // الآن الإدمن يرى البلاغات المعلقة (pending) والتي تم تأكيدها (confirmed) ولم تُحل بعد
+            // الإدمن يرى البلاغات المعلقة أو المؤكدة (التي تحتاج تدخل منه)
             const activeReports = allReports.filter(r => r.status === 'pending' || r.status === 'confirmed');
             const container = document.getElementById('admin-content');
             
             if (activeReports.length === 0) {
                 container.innerHTML = `
-                    <div class="bg-slate-900/50 border border-slate-800 rounded-3xl p-12 flex flex-col items-center text-center">
+                    <div class="bg-slate-900/50 border border-slate-800 rounded-3xl p-12 flex flex-col items-center text-center shadow-inner">
                         <div class="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mb-6">
                             <i class="ph-fill ph-check-circle text-5xl text-green-500"></i>
                         </div>
-                        <h3 class="text-xl font-black text-white mb-2">الوضع مستقر</h3>
-                        <p class="text-slate-400 font-medium">لا توجد بلاغات نشطة تحتاج لتدخل حالياً.</p>
+                        <h3 class="text-xl font-black text-white mb-2">الوضع مستقر 100%</h3>
+                        <p class="text-slate-400 font-medium">لا توجد بلاغات تحتاج لتدخلك في الوقت الحالي.</p>
                     </div>
                 `;
                 return;
@@ -436,45 +433,42 @@
             activeReports.forEach((report, i) => {
                 let actionButtons = '';
                 
-                // أزرار التأكيد أو الرفض
                 if (report.status === 'pending') {
                     actionButtons = `
-                        <button onclick="updateReportStatus(${report.id}, 'confirmed')" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold transition-colors shadow-lg shadow-red-900/20">
+                        <button onclick="updateReportStatus(${report.id}, 'confirmed')" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-red-900/20 hover:scale-105 active:scale-95">
                             <i class="ph-bold ph-check-circle text-lg"></i> تأكيد العطل
                         </button>
-                        <button onclick="updateReportStatus(${report.id}, 'denied')" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-colors">
+                        <button onclick="updateReportStatus(${report.id}, 'denied')" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-all hover:scale-105 active:scale-95">
                             <i class="ph-bold ph-x-circle text-lg"></i> رفض
                         </button>
                     `;
-                } 
-                // زر حل المشكلة بعد التأكيد
-                else if (report.status === 'confirmed') {
+                } else if (report.status === 'confirmed') {
                     actionButtons = `
-                        <button onclick="updateReportStatus(${report.id}, 'resolved')" class="flex-1 w-full sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold transition-colors shadow-lg shadow-green-900/20">
+                        <button onclick="updateReportStatus(${report.id}, 'resolved')" class="flex-1 w-full sm:flex-none flex items-center justify-center gap-2 px-5 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-green-900/20 hover:scale-105 active:scale-95">
                             <i class="ph-bold ph-wrench text-lg"></i> تم حل المشكلة 
                         </button>
                     `;
                 }
 
                 html += `
-                    <div style="animation-delay: ${i * 0.1}s" class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center animate-fade-in-up hover:border-slate-700 transition-colors">
+                    <div style="animation-delay: ${i * 0.1}s" class="bg-slate-900 border ${report.status === 'confirmed' ? 'border-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.1)]' : 'border-slate-800'} p-5 rounded-2xl flex flex-col sm:flex-row gap-5 justify-between items-start sm:items-center animate-fade-in-up transition-colors">
                         <div class="flex items-center gap-4">
-                            <div class="${report.status === 'pending' ? 'bg-yellow-500/10' : 'bg-red-500/10'} p-3 rounded-full flex items-center justify-center">
-                                <i class="ph-fill ${report.status === 'pending' ? 'ph-warning-circle text-yellow-500' : 'ph-wifi-slash text-red-500'} text-3xl"></i>
+                            <div class="${report.status === 'pending' ? 'bg-yellow-500/10 text-yellow-500' : 'bg-red-500/10 text-red-500'} p-4 rounded-full flex items-center justify-center">
+                                <i class="ph-fill ${report.status === 'pending' ? 'ph-warning-circle' : 'ph-wifi-slash'} text-3xl"></i>
                             </div>
                             <div>
                                 <div class="flex items-center gap-3 mb-1">
                                     <h4 class="text-lg font-black text-slate-200">بلاغ انقطاع</h4>
                                     ${getStatusBadgeHTML(report.status)}
                                 </div>
-                                <div class="flex items-center gap-4 text-sm text-slate-400 font-bold">
+                                <div class="flex items-center gap-4 text-sm text-slate-400 font-bold mt-2 bg-slate-950 p-2 rounded-lg border border-slate-800 inline-flex">
                                     <span class="flex items-center gap-1"><i class="ph-bold ph-calendar-blank"></i> ${report.datestring}</span>
-                                    <span class="flex items-center gap-1"><i class="ph-bold ph-clock"></i> ${formatTime(report.timestamp)}</span>
+                                    <div class="w-px h-4 bg-slate-700"></div>
+                                    <span class="flex items-center gap-1"><i class="ph-bold ph-clock"></i> الساعة ${formatTime(report.timestamp)}</span>
                                 </div>
-                                <p class="text-xs text-slate-600 mt-2 font-mono font-bold" dir="ltr">ID: #${String(report.id).substring(0, 8)}</p>
                             </div>
                         </div>
-                        <div class="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                        <div class="flex gap-3 w-full sm:w-auto mt-2 sm:mt-0">
                             ${actionButtons}
                         </div>
                     </div>
@@ -484,7 +478,6 @@
             container.innerHTML = html;
         }
 
-        // Render History Tab
         function renderHistory() {
             const container = document.getElementById('history-content');
             const historyReports = allReports.filter(r => r.datestring === selectedDate);
@@ -495,7 +488,7 @@
                 container.innerHTML = `
                     <div class="h-full flex flex-col items-center justify-center text-center py-16">
                         <i class="ph-duotone ph-clock-counter-clockwise text-6xl text-slate-700 mb-4"></i>
-                        <p class="text-lg font-bold text-slate-400">لا توجد سجلات لهذا اليوم</p>
+                        <p class="text-lg font-bold text-slate-400">لا توجد سجلات مسجلة لهذا اليوم</p>
                     </div>
                 `;
                 return;
@@ -509,45 +502,63 @@
                 if(report.status === 'denied') { iconClass = 'bg-slate-500/20 text-slate-500'; icon = 'ph-x'; }
                 if(report.status === 'resolved') { iconClass = 'bg-green-500/20 text-green-500'; icon = 'ph-check-circle'; }
 
-                let durationText = '';
+                let detailedTimeHTML = '';
                 if (report.status === 'resolved' && report.resolved_timestamp) {
                     const diffMs = report.resolved_timestamp - report.timestamp;
                     const mins = Math.floor(diffMs / 60000);
-                    durationText = `<span class="text-xs px-2 py-0.5 bg-slate-700 text-slate-300 rounded-md mr-2">استغرق العطل ${mins} دقيقة</span>`;
+                    const startTime = formatTime(report.timestamp);
+                    const endTime = formatTime(report.resolved_timestamp);
+                    
+                    detailedTimeHTML = `
+                        <div class="mt-3 text-sm bg-slate-900 border border-slate-700/50 p-3 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-slate-400">فترة العطل:</span>
+                                <span class="font-bold text-slate-200">من ${startTime}</span>
+                                <i class="ph-bold ph-arrow-left text-slate-500 text-xs"></i>
+                                <span class="font-bold text-slate-200">إلى ${endTime}</span>
+                            </div>
+                            <div class="bg-slate-800 text-green-400 px-2 py-1 rounded font-bold text-xs border border-green-500/20">
+                                استغرق ${mins} دقيقة
+                            </div>
+                        </div>
+                    `;
                 }
 
                 html += `
-                    <div style="animation-delay: ${i * 0.05}s" class="flex items-center justify-between p-4 rounded-xl bg-slate-800/50 border border-slate-700/50 hover:bg-slate-800 transition-colors animate-fade-in-up">
-                        <div class="flex items-center gap-4">
-                            <div class="p-2 rounded-lg flex items-center justify-center ${iconClass}">
-                                <i class="ph-fill ${icon} text-2xl"></i>
-                            </div>
-                            <div>
-                                <div class="font-black text-slate-200 flex items-center">رقم البلاغ: <span class="text-slate-400 font-mono text-sm mr-2" dir="ltr">#${String(report.id).slice(-6)}</span> ${durationText}</div>
-                                <div class="text-sm text-slate-400 flex items-center gap-1 mt-1 font-bold">
-                                    <i class="ph-bold ph-clock"></i> ${formatTime(report.timestamp)}
+                    <div style="animation-delay: ${i * 0.05}s" class="flex flex-col p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 hover:bg-slate-800 transition-colors animate-fade-in-up">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+                                <div class="p-3 rounded-xl flex items-center justify-center ${iconClass}">
+                                    <i class="ph-fill ${icon} text-2xl"></i>
+                                </div>
+                                <div>
+                                    <div class="font-black text-slate-200 flex items-center gap-2">
+                                        بلاغ رقم <span class="bg-slate-950 px-2 py-0.5 rounded text-slate-400 font-mono text-sm border border-slate-800" dir="ltr">#${String(report.id).slice(-4)}</span>
+                                    </div>
+                                    <div class="text-sm text-slate-400 flex items-center gap-1 mt-1 font-bold">
+                                        <i class="ph-bold ph-clock"></i> مسجل الساعة ${formatTime(report.timestamp)}
+                                    </div>
                                 </div>
                             </div>
+                            <div>
+                                ${getStatusBadgeHTML(report.status)}
+                            </div>
                         </div>
-                        <div>
-                            ${getStatusBadgeHTML(report.status)}
-                        </div>
+                        ${detailedTimeHTML}
                     </div>
                 `;
             });
             container.innerHTML = html;
         }
 
-        // --- 5. Actions (Submit Report & Update Status) ---
         async function submitReport() {
             const btnContent = document.getElementById('report-btn-content');
             const btnLoading = document.getElementById('report-btn-loading');
             const btn = document.getElementById('report-btn');
 
-            // UI Loading state
             btn.disabled = true;
-            btn.classList.remove('animate-pulse-glow', 'hover:scale-105');
-            btn.classList.add('opacity-80');
+            btn.classList.remove('animate-pulse-glow', 'hover:scale-105', 'cursor-pointer');
+            btn.classList.add('opacity-80', 'cursor-wait');
             btnContent.classList.add('hidden');
             btnLoading.classList.remove('hidden');
             btnLoading.classList.add('flex');
@@ -570,24 +581,20 @@
 
                 if (!response.ok) {
                     const errObj = await response.json();
-                    console.error("Supabase Error Details:", errObj);
-                    throw new Error("السبب: " + (errObj.message || errObj.details));
+                    throw new Error("خطأ من السيرفر: " + JSON.stringify(errObj));
                 }
                 
                 const newData = await response.json();
-                
-                // Add to local state immediately
                 allReports.unshift(newData[0]);
                 updateUI();
-                showToast("تم إرسال البلاغ بنجاح! جاري المراجعة.", "success");
+                showToast("تم إرسال بلاغك بنجاح! سيتم فحصه فوراً.", "success");
             } catch (error) {
                 console.error("Report error:", error);
-                showToast(error.message || "حدث خطأ أثناء إرسال البلاغ", "error");
+                showToast(error.message, "error", 8000); // إظهار الخطأ لفترة أطول لكي تقرأه
             } finally {
-                // Restore UI
                 btn.disabled = false;
-                btn.classList.add('animate-pulse-glow', 'hover:scale-105');
-                btn.classList.remove('opacity-80');
+                btn.classList.add('animate-pulse-glow', 'hover:scale-105', 'cursor-pointer');
+                btn.classList.remove('opacity-80', 'cursor-wait');
                 btnContent.classList.remove('hidden');
                 btnLoading.classList.add('hidden');
                 btnLoading.classList.remove('flex');
@@ -598,7 +605,6 @@
             try {
                 const updateData = { status: newStatus };
                 
-                // إضافة وقت الحل إذا تم حل المشكلة
                 if (newStatus === 'resolved') {
                     updateData.resolved_timestamp = Date.now();
                 }
@@ -616,31 +622,28 @@
 
                 if (!response.ok) {
                     const errObj = await response.json();
-                    console.error("Supabase Error Details:", errObj);
-                    throw new Error("السبب: " + (errObj.message || errObj.details));
+                    throw new Error("خطأ في التحديث: " + JSON.stringify(errObj));
                 }
                 
                 const responseData = await response.json();
                 
-                // Update local state
                 allReports = allReports.map(r => r.id === id ? responseData[0] : r);
                 updateUI();
                 
                 if (newStatus === 'confirmed') showToast("تم تأكيد العطل! جاري العمل عليه.", "success");
-                else if (newStatus === 'denied') showToast("تم رفض البلاغ.", "success");
-                else if (newStatus === 'resolved') showToast("ممتاز! تم تسجيل حل المشكلة وحساب وقت العطل.", "success");
+                else if (newStatus === 'denied') showToast("تم رفض البلاغ واحتسابه بلاغاً كاذباً.", "success");
+                else if (newStatus === 'resolved') showToast("ممتاز! تم تسجيل حل المشكلة وعودة الخدمة للعمل.", "success");
                 
             } catch (error) {
                 console.error("Update error:", error);
-                showToast(error.message || "حدث خطأ أثناء تحديث الحالة", "error");
+                showToast(error.message, "error");
             }
         }
 
-        // --- 6. Initialization ---
-        // Fetch immediately
+        // جلب البيانات أول مرة عند تحميل الصفحة
         fetchReports();
         
-        // Auto refresh every 5 seconds
+        // تحديث حي (Real-time Simulation) بطلب البيانات كل 5 ثواني في الخلفية
         setInterval(fetchReports, 5000);
 
     </script>
