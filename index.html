@@ -454,7 +454,7 @@
                                     ${getStatusBadgeHTML(report.status)}
                                 </div>
                                 <div class="flex items-center gap-4 text-sm text-slate-400 font-bold">
-                                    <span class="flex items-center gap-1"><i class="ph-bold ph-calendar-blank"></i> ${report.dateString}</span>
+                                    <span class="flex items-center gap-1"><i class="ph-bold ph-calendar-blank"></i> ${report.datestring}</span>
                                     <span class="flex items-center gap-1"><i class="ph-bold ph-clock"></i> ${formatTime(report.timestamp)}</span>
                                 </div>
                                 <p class="text-xs text-slate-600 mt-2 font-mono font-bold" dir="ltr">ID: #${String(report.id).substring(0, 8)}</p>
@@ -473,7 +473,7 @@
         // Render History Tab
         function renderHistory() {
             const container = document.getElementById('history-content');
-            const historyReports = allReports.filter(r => r.dateString === selectedDate);
+            const historyReports = allReports.filter(r => r.datestring === selectedDate);
             
             document.getElementById('history-count-badge').textContent = `${historyReports.length} بلاغات`;
 
@@ -549,7 +549,7 @@
                     },
                     body: JSON.stringify({
                         timestamp: Date.now(),
-                        dateString: getLocalDateString(new Date()),
+                        datestring: getLocalDateString(new Date()),
                         status: 'pending'
                     })
                 });
